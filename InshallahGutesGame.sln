@@ -1,0 +1,36 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.2.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "LeckEier", "LeckEier", "{0AF205D9-0AD0-517D-9188-85791F24D70E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Assembly-CSharp-Editor", "LeckEier\Assembly-CSharp-Editor.csproj", "{087FBE3B-C035-A4D5-E651-00B0492BA00C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Assembly-CSharp", "LeckEier\Assembly-CSharp.csproj", "{FC9B6974-FA6B-D85F-E076-7A90530E8CD3}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{087FBE3B-C035-A4D5-E651-00B0492BA00C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{087FBE3B-C035-A4D5-E651-00B0492BA00C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{087FBE3B-C035-A4D5-E651-00B0492BA00C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{087FBE3B-C035-A4D5-E651-00B0492BA00C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FC9B6974-FA6B-D85F-E076-7A90530E8CD3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FC9B6974-FA6B-D85F-E076-7A90530E8CD3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FC9B6974-FA6B-D85F-E076-7A90530E8CD3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FC9B6974-FA6B-D85F-E076-7A90530E8CD3}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{087FBE3B-C035-A4D5-E651-00B0492BA00C} = {0AF205D9-0AD0-517D-9188-85791F24D70E}
+		{FC9B6974-FA6B-D85F-E076-7A90530E8CD3} = {0AF205D9-0AD0-517D-9188-85791F24D70E}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {EA974C17-89A4-4969-A316-FF7ABEF4A46B}
+	EndGlobalSection
+EndGlobal
