@@ -11,8 +11,6 @@ using TMPro;
 public class SceneSetup : MonoBehaviour
 {
     [Header("Map")]
-    public Vector3 arenaSize = new Vector3(60f, 20f, 60f);
-    public int platformCount = 12;
     public int botCount = 4;
 
     [ContextMenu("Build REDMATCH Scene")]
@@ -61,46 +59,105 @@ public class SceneSetup : MonoBehaviour
                   "  Layer 6 = Ground\n  Layer 7 = Player\n  Layer 8 = Enemy");
     }
 
-    // ─── Arena ───────────────────────────────────────────────────────────────
+    // ─── Arena (Dust-2 inspired layout) ─────────────────────────────────────
+    //
+    // Map overview (top = north / CT side):
+    //
+    //  Z=+100  ┌────────────────────────────────────────┐
+    //          │            CT SPAWN                    │
+    //  Z=+62   │  [ct→A open]  │wall│  [ct→B open]     │
+    //          │   A  SITE     │A/B │   B  SITE         │
+    //  Z=+20   ├───────────────┤sep ├───────────────────┤
+    //          │ [LongA] ▓▓▓▓▓ │MID │ ▓▓▓▓▓ [BTunnel]  │
+    //  Z=-50   ├───────────────┴────┴───────────────────┤
+    //          │              T SPAWN                   │
+    //  Z=-100  └────────────────────────────────────────┘
+    //         -65  -45  -20       +20  +45             +65
+    //
+    // Long A  : X[-65,-45]   Mid : X[-20,+20]   B Tunnel : X[+45,+65]
+    // Divider blocks (▓) fill X[-45,-20] and X[+20,+45] for Z[-50,+20]
 
     void BuildArena()
     {
         var arena = new GameObject("Arena");
+        const float WH = 14f;   // wall height – taller than max jump (~10 u)
 
-        // Floor
-        CreateBox(arena.transform, "Floor",
-            new Vector3(0f, 0f, 0f),
-            new Vector3(arenaSize.x, 0.5f, arenaSize.z),
-            new Color(0.2f, 0.2f, 0.25f));
+        Color sand    = new Color(0.78f, 0.68f, 0.48f);
+        Color dSand   = new Color(0.52f, 0.44f, 0.28f);
+        Color stone   = new Color(0.50f, 0.48f, 0.44f);
+        Color crate   = new Color(0.66f, 0.58f, 0.42f);
+        Color ctFloor = new Color(0.40f, 0.48f, 0.56f);
 
-        // Walls
-        float hw = arenaSize.x / 2f + 0.5f;
-        float hd = arenaSize.z / 2f + 0.5f;
-        float wh = arenaSize.y;
-        CreateBox(arena.transform, "WallN", new Vector3(0f, wh/2f, hd), new Vector3(arenaSize.x + 1f, wh, 1f), Color.gray);
-        CreateBox(arena.transform, "WallS", new Vector3(0f, wh/2f,-hd), new Vector3(arenaSize.x + 1f, wh, 1f), Color.gray);
-        CreateBox(arena.transform, "WallE", new Vector3( hw, wh/2f, 0f), new Vector3(1f, wh, arenaSize.z + 1f), Color.gray);
-        CreateBox(arena.transform, "WallW", new Vector3(-hw, wh/2f, 0f), new Vector3(1f, wh, arenaSize.z + 1f), Color.gray);
+        // ── GROUND ──────────────────────────────────────────────────────────
+        CreateBox(arena.transform, "Ground",
+            Vector3.zero, new Vector3(132f, 1f, 202f), sand);
+        // CT area gets a distinct floor colour
+        CreateBox(arena.transform, "Ground_CT",
+            new Vector3(10f, 0.06f, +80f), new Vector3(100f, 0.6f, 40f), ctFloor);
 
-        // Platforms (randomized layout)
-        var rng = new System.Random(42);
-        for (int i = 0; i < platformCount; i++)
-        {
-            float x = (float)(rng.NextDouble() * arenaSize.x - arenaSize.x / 2f) * 0.8f;
-            float z = (float)(rng.NextDouble() * arenaSize.z - arenaSize.z / 2f) * 0.8f;
-            float y = (float)(rng.NextDouble() * arenaSize.y * 0.6f) + 1.5f;
-            float w = (float)(rng.NextDouble() * 6f) + 3f;
-            float d = (float)(rng.NextDouble() * 6f) + 3f;
+        // ── OUTER WALLS ─────────────────────────────────────────────────────
+        CreateBox(arena.transform, "OW_S", new Vector3(  0f, WH/2,-101f), new Vector3(134f,WH,  2f), stone);
+        CreateBox(arena.transform, "OW_N", new Vector3(  0f, WH/2,+101f), new Vector3(134f,WH,  2f), stone);
+        CreateBox(arena.transform, "OW_W", new Vector3(-66f, WH/2,   0f), new Vector3(  2f,WH,204f), stone);
+        CreateBox(arena.transform, "OW_E", new Vector3(+66f, WH/2,   0f), new Vector3(  2f,WH,204f), stone);
 
-            float hue = (float)i / platformCount;
-            Color c = Color.HSVToRGB(hue, 0.3f, 0.45f);
-            CreateBox(arena.transform, $"Platform_{i}", new Vector3(x, y, z), new Vector3(w, 0.4f, d), c);
-        }
+        // ── CORRIDOR DIVIDER BLOCKS ──────────────────────────────────────────
+        // Solid block left  (between Long A and Mid):  X[-45,-20]
+        CreateBox(arena.transform, "Div_L",
+            new Vector3(-32.5f, WH/2, -15f), new Vector3(25f, WH, 70f), dSand);
+        // Solid block right (between Mid and B Tunnel): X[+20,+45]
+        CreateBox(arena.transform, "Div_R",
+            new Vector3(+32.5f, WH/2, -15f), new Vector3(25f, WH, 70f), dSand);
 
-        // Central tower
-        CreateBox(arena.transform, "Tower_Base",  new Vector3(0, 2,  0), new Vector3(6, 4, 6),  new Color(0.3f,0.15f,0.15f));
-        CreateBox(arena.transform, "Tower_Mid",   new Vector3(0, 6,  0), new Vector3(4, 4, 4),  new Color(0.35f,0.1f,0.1f));
-        CreateBox(arena.transform, "Tower_Top",   new Vector3(0, 10, 0), new Vector3(3, 4, 3),  new Color(0.4f,0.05f,0.05f));
+        // ── A / B SITE SEPARATOR ────────────────────────────────────────────
+        // Thick wall between sites: X[+5,+35], Z[+20,+70]
+        CreateBox(arena.transform, "AB_Sep",
+            new Vector3(+20f, WH/2, +45f), new Vector3(30f, WH, 50f), dSand);
+
+        // ── A SITE CT BOUNDARY ──────────────────────────────────────────────
+        // Opening X[-65,-38] for CT→A short push (27 units wide)
+        // Wall from X[-38, +5]  →  center=-16.5, width=43
+        CreateBox(arena.transform, "A_CT_Wall",
+            new Vector3(-16.5f, WH/2, +62f), new Vector3(43f, WH, 2f), dSand);
+
+        // ── CT SPAWN WEST WALL ───────────────────────────────────────────────
+        // Runs from A_CT_Wall west end (-38) to north outer wall
+        CreateBox(arena.transform, "CT_W",
+            new Vector3(-38f, WH/2, +81f), new Vector3(2f, WH, 38f), stone);
+
+        // ── COVER – A SITE ───────────────────────────────────────────────────
+        CreateBox(arena.transform, "A_BigCrate",  new Vector3(-50f, 3f,   +40f), new Vector3( 8f,6f, 8f), crate);
+        CreateBox(arena.transform, "A_SmCrate",   new Vector3(-38f, 2.5f, +33f), new Vector3( 5f,5f, 5f), crate);
+        CreateBox(arena.transform, "A_Crate2",    new Vector3(-22f, 2.5f, +52f), new Vector3( 5f,5f, 5f), crate);
+        CreateBox(arena.transform, "A_Truck",     new Vector3(-12f, 3.5f, +44f), new Vector3(14f,7f, 6f), stone);
+        CreateBox(arena.transform, "A_Barrel",    new Vector3(-35f, 2.5f, +55f), new Vector3( 4f,5f, 4f), crate);
+
+        // ── COVER – B SITE ───────────────────────────────────────────────────
+        CreateBox(arena.transform, "B_BigCrate",  new Vector3(+50f, 2.5f, +38f), new Vector3( 8f,5f, 8f), crate);
+        CreateBox(arena.transform, "B_Plat",      new Vector3(+58f, 3.5f, +54f), new Vector3(14f,7f,14f), dSand);
+        CreateBox(arena.transform, "B_SmCrate1",  new Vector3(+44f, 2.5f, +50f), new Vector3( 5f,5f, 5f), crate);
+        CreateBox(arena.transform, "B_SmCrate2",  new Vector3(+58f, 2.5f, +40f), new Vector3( 5f,5f, 5f), crate);
+
+        // ── COVER – CORRIDORS ────────────────────────────────────────────────
+        // Long A
+        CreateBox(arena.transform, "LA_Box",      new Vector3(-56f, 2.5f, -15f), new Vector3(6f,5f,6f), crate);
+        CreateBox(arena.transform, "LA_Wall",     new Vector3(-56f, 2f,   +10f), new Vector3(8f,4f,2f), dSand);
+        // Mid
+        CreateBox(arena.transform, "Mid_Box",     new Vector3(  0f, 2.5f, -10f), new Vector3(5f,5f,5f), crate);
+        CreateBox(arena.transform, "Mid_Ledge",   new Vector3( -8f, 2f,   + 8f), new Vector3(3f,4f,6f), dSand);
+        // B Tunnel
+        CreateBox(arena.transform, "BT_Box",      new Vector3(+56f, 2.5f, -15f), new Vector3(6f,5f,6f), crate);
+        // B Tunnel divider (lower / upper split at Z=-50 end)
+        CreateBox(arena.transform, "BT_Div",      new Vector3(+55f, WH/2, -58f), new Vector3(22f,WH, 2f), dSand);
+
+        // ── COVER – T SPAWN ──────────────────────────────────────────────────
+        CreateBox(arena.transform, "T_Box1",      new Vector3(-22f, 2.5f, -78f), new Vector3(6f,5f,6f), crate);
+        CreateBox(arena.transform, "T_Box2",      new Vector3(+22f, 2.5f, -78f), new Vector3(6f,5f,6f), crate);
+        CreateBox(arena.transform, "T_Box3",      new Vector3(  0f, 2.5f, -88f), new Vector3(6f,5f,4f), crate);
+
+        // ── COVER – CT SPAWN ─────────────────────────────────────────────────
+        CreateBox(arena.transform, "CT_Box1",     new Vector3(-18f, 2.5f, +80f), new Vector3(6f,5f,6f), crate);
+        CreateBox(arena.transform, "CT_Box2",     new Vector3(+28f, 2.5f, +80f), new Vector3(6f,5f,6f), crate);
     }
 
     GameObject CreateBox(Transform parent, string boxName, Vector3 pos, Vector3 scale, Color color)
@@ -129,7 +186,7 @@ public class SceneSetup : MonoBehaviour
         // Root at scale (1,1,1) so CC dimensions and child positions are in world space
         var player = new GameObject("Player");
         player.layer = 7;
-        player.transform.position = new Vector3(0f, PlayerScale, -20f);
+        player.transform.position = new Vector3(0f, PlayerScale, -80f); // T spawn
 
         // Visual capsule body as child — purely cosmetic, no collider
         var body = GameObject.CreatePrimitive(PrimitiveType.Capsule);
@@ -235,14 +292,21 @@ public class SceneSetup : MonoBehaviour
         string[] names = { "BotAlpha", "BotBeta", "BotGamma", "BotDelta",
                            "BotEpsilon", "BotZeta", "BotEta", "BotTheta" };
 
-        for (int i = 0; i < Mathf.Min(botCount, names.Length); i++)
+        // Spread bots across the map; positions match the map areas
+        Vector3[] positions =
         {
-            float angle = (360f / botCount) * i;
-            float x = Mathf.Cos(angle * Mathf.Deg2Rad) * 18f;
-            float z = Mathf.Sin(angle * Mathf.Deg2Rad) * 18f;
+            new Vector3(-56f, PlayerScale, +40f),   // A site
+            new Vector3(+52f, PlayerScale, +44f),   // B site
+            new Vector3(  0f, PlayerScale, +82f),   // CT spawn
+            new Vector3(-56f, PlayerScale, -15f),   // Long A corridor
+            new Vector3(+56f, PlayerScale, -15f),   // B tunnel
+            new Vector3(  0f, PlayerScale,  -8f),   // Mid
+            new Vector3(-22f, PlayerScale, -78f),   // T spawn left
+            new Vector3(+22f, PlayerScale, -78f),   // T spawn right
+        };
 
-            CreateBot(names[i], new Vector3(x, PlayerScale, z));
-        }
+        for (int i = 0; i < Mathf.Min(botCount, positions.Length); i++)
+            CreateBot(names[i], positions[i]);
     }
 
     void CreateBot(string botName, Vector3 pos)
@@ -297,15 +361,25 @@ public class SceneSetup : MonoBehaviour
 
     Transform[] CreateSpawnPoints(Transform parent)
     {
-        var pts = new Transform[8];
-        for (int i = 0; i < 8; i++)
+        // Spread spawn points across the map (T side, sites, CT)
+        Vector3[] spawnPos =
         {
-            float angle = (360f / 8) * i;
-            float x = Mathf.Cos(angle * Mathf.Deg2Rad) * 22f;
-            float z = Mathf.Sin(angle * Mathf.Deg2Rad) * 22f;
+            new Vector3(  0f, PlayerScale, -80f),   // T centre
+            new Vector3(-25f, PlayerScale, -75f),   // T left
+            new Vector3(+25f, PlayerScale, -75f),   // T right
+            new Vector3(-56f, PlayerScale, +40f),   // A site
+            new Vector3(+52f, PlayerScale, +44f),   // B site
+            new Vector3(  0f, PlayerScale, +82f),   // CT centre
+            new Vector3(-25f, PlayerScale, +82f),   // CT left
+            new Vector3(+25f, PlayerScale, +82f),   // CT right
+        };
+
+        var pts = new Transform[spawnPos.Length];
+        for (int i = 0; i < spawnPos.Length; i++)
+        {
             var sp = new GameObject($"Spawn_{i}");
             sp.transform.SetParent(parent);
-            sp.transform.position = new Vector3(x, PlayerScale + 0.5f, z);
+            sp.transform.position = spawnPos[i];
             pts[i] = sp.transform;
         }
         return pts;
